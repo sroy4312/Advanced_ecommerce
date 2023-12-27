@@ -1,11 +1,11 @@
 const User = require("../models/user.model.js");
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { getUserIdFromToken } = require('../config/jwtProvider.js');
 
 const createUser = async(userData) => {
     try {
         let { firstName, lastName, email, password } = userData;
-        const isUserExists = await User.findOne(email);
+        const isUserExists = await User.findOne({email});
         if(isUserExists) {
             throw new Error("User already exists with the registered email: ", email);
         }
@@ -25,7 +25,8 @@ const createUser = async(userData) => {
 
 const findUserById = async(userId) => {
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(userId)
+        //.populate("address");
         if(!user) {
             throw new Error("User not found with id: ", userId);
         }
@@ -35,7 +36,7 @@ const findUserById = async(userId) => {
     }
 }
 
-const findUserByEmail = async(email) => {
+const getUserByEmail = async(email) => {
     try {
         const user = await User.findOne({email});
         if(!user) {
@@ -49,10 +50,25 @@ const findUserByEmail = async(email) => {
 
 const getUserProfileByToken = async(token) => {
     try {
-
+        const userId = getUserIdFromToken(token);
+        const user = await findUserById(userId);
+        if(!user) {
+            throw new Error("User not found with id: ", userId)
+        }
+        console.log("User: ", user);
+        return user;
     }catch(e) {
-
+        throw new Error(e.message);
     }
 }
 
-module.exports = { createUser, findUserById, findUserByEmail };
+const getAllUsers = async() => {
+    try {
+        const users = await User.find();
+        return users;
+    } catch (e) {
+        throw new Error(e.message);
+    }
+}
+
+module.exports = { createUser, findUserById, getUserByEmail, getUserProfileByToken, getAllUsers };
