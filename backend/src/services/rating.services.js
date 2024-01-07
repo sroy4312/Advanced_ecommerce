@@ -12,8 +12,8 @@ const createRating = async(user, req) => {
     return await rating.save();
 }
 
-const getProductRating = async(productId) => {
+const getAllRatings = async(productId) => {
     return await Rating.find({product: productId});
 }
 
-module.exports = { createRating, getProductRating };
+module.exports = { createRating, getAllRatings };
