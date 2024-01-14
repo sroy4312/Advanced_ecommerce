@@ -3,12 +3,13 @@ const Category = require('../models/category.model.js');
 
 
 const createProduct = async(reqData) => {
-    let topLevel = await Category.findOne({name: reqData.topLevelcategory});
+    let topLevel = await Category.findOne({name: reqData.topLevelCategory});
     if(!topLevel) {
         topLevel = new Category({
-            name: reqData.topLevelcategory,
+            name: reqData.topLevelCategory,
             level: 1,
         })
+        await topLevel.save();
     }
     let secondLevel = await Category.findOne({
         name: reqData.secondLevelCategory,
@@ -20,17 +21,19 @@ const createProduct = async(reqData) => {
             parentCategory: topLevel._id,
             level: 2
         })
+       await secondLevel.save();
     }
     let thirdLevel = await Category.findOne({
-        name: reqData.thirdLevelcategory,
+        name: reqData.thirdLevelCategory,
         parentCategory: secondLevel._id
     })
     if(!thirdLevel) {
         thirdLevel = new Category({
-            name: reqData.thirdLevelcategory,
+            name: reqData.thirdLevelCategory,
             parentCategory: secondLevel._id,
             level: 3
         })
+        await thirdLevel.save();
     }
     const product = new Product({
         title: reqData.title,
@@ -84,7 +87,7 @@ const getAllProducts = async(reqQuery) => {
         const colorRegex = colorSet.size > 0 ? new RegExp([...colorSet].join("|"), "i") : null;
         query = query.where("color").regex(colorRegex);
     }
-    if(Sizes) {
+    if(sizes) {
         const sizesSet = new Set(sizes);
         query = query.where("sizes.name").in([...sizesSet]);
     }
